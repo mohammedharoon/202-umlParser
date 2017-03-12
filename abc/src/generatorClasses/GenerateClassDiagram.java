@@ -1,5 +1,6 @@
-package abc;
+package generatorClasses;
 
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -19,7 +20,9 @@ public void generateDiagram()
 {
 	fullWebURL = yUMLWebLink + intermediateGrammar;
 	try{
-		URL url = new URL(fullWebURL);	
+		URL url = new URL(fullWebURL);
+		HttpURLConnection hcon = (HttpURLConnection) url.openConnection();
+		hcon.setRequestMethod("GET");
 	}
 	catch(MalformedURLException e){
 		e.printStackTrace();
