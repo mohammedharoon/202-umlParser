@@ -20,16 +20,18 @@ public GenerateClassDiagram(String uri, String intGrammar)
 }
 public void generateDiagram()
 {
-	fullWebURL = yUMLWebLink + intermediateGrammar + ".png";
+	fullWebURL = yUMLWebLink + intermediateGrammar;
 	try{
 		URL url = new URL(fullWebURL);
 		HttpURLConnection hcon = (HttpURLConnection) url.openConnection();
 		hcon.setRequestMethod("GET");
-		String outputFilePath = "";
+		String outputFilePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\outputFiles\\classdiag.png";
 		FileOutputStream fos = new FileOutputStream(new File(outputFilePath));
-		
-		char c = 'a';
-		System.out.println(hcon.getInputStream());
+		System.out.println(hcon.getResponseCode());
+		int i;
+		while((i = hcon.getInputStream().read())!=-1)
+			fos.write(i);
+		fos.close();
 		
 	}
 	catch(MalformedURLException e){
