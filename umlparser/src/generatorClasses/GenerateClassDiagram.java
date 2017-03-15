@@ -13,9 +13,9 @@ private String yUMLWebLink;
 private String intermediateGrammar;
 private String fullWebURL;
 
-public GenerateClassDiagram(String uri, String intGrammar)
+public GenerateClassDiagram(String intGrammar,String outputFile)
 {
-	this.yUMLWebLink = uri;
+	this.yUMLWebLink = "https://yuml.me/diagram/scruffy/class/";
 	this.intermediateGrammar = intGrammar;
 }
 public void generateDiagram()
@@ -46,8 +46,11 @@ public void generateDiagram()
 public static void main(String args[])
 {
 	String sampleGrammar = "[C1|+test(a1:A1)]uses -.->[<<interface>>;A1],[<<interface>>;A1]^-.-[B1],[<<interface>>;A1]^-.-[B2],[P]^-[B1],[P]^-[B2],[<<interface>>;A2]^-.-[B2],[C2|+test(a2:A2)]uses -.->[<<interface>>;A2]";
-	String link = "https://yuml.me/diagram/scruffy/class/";
-    GenerateClassDiagram gen  = new GenerateClassDiagram(link,sampleGrammar);
+	String outputLocation = "";
+	System.out.println(System.getProperty("user.dir"));
+	String basePath = new File("").getAbsolutePath();
+    System.out.println(basePath);
+    GenerateClassDiagram gen  = new GenerateClassDiagram(sampleGrammar,outputLocation);
     gen.generateDiagram();
 }
 }
