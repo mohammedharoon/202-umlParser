@@ -2,6 +2,7 @@ package generatorClasses;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
@@ -11,22 +12,35 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 
-public class JavaCodeParser {
+public class MyJavaCodeParser {
 	
 	private static String variables;
 	private String methods;
 	private String className;
-    private String result;
+    private String resultantIntermediateString;
     
 	public static void main(String args[]) throws Exception
 	{
-
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\umlparser\\src\\generatorClasses";
+		//String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\umlparser\\src\\generatorClasses";
+		//FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
 		FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");
+		ArrayList<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
+		File testFolder = new File(basePath);
+		for(File file : testFolder.listFiles())
+		{
+			if(file.getName().endsWith(".java") && file.isFile())
+			{
+			    FileInputStream inpFile = new FileInputStream(file);
+			    CompilationUnit compilationUnit = JavaParser.parse(inpFile);
+			    compilationUnits.add(compilationUnit);
+			    in.close();
+			}
+		}
         // parse the file
-        CompilationUnit compilationUnit = JavaParser.parse(in);
-        JavaCodeParser javaCodeParser = new JavaCodeParser();
-        javaCodeParser.parser(compilationUnit);
+
+        MyJavaCodeParser javaCodeParser = new MyJavaCodeParser();
+        javaCodeParser.parser(compilationUnits);
         
         //List<TypeDeclaration<?>> c1 = compilationUnit.getTypes();
         //List<TypeDeclaration> c1 = compilationUnit.getTypes();
@@ -46,32 +60,44 @@ public class JavaCodeParser {
         
         
         //BodyDeclaration bd = ((TypeDeclaration) node).getMembers();
-
-        
-
     }
 	
-
-	public String convertScopeToSymbol(String varScope)
+	public String CompileTestFolder(String testFolderPath)
 	{
-		if(varScope == "private")
+		
+		return null;
+	}
+    /** This method converts the access modifier of a variable
+     *  into equivalent UML symbol
+     * @param varAccessModifier
+     * @return
+     */
+	public String convertAccessModifiedToSymbol(String varAccessModifier)
+	{
+		if(varAccessModifier == "private")
 			return "-";
-		else if(varScope == "protected")
+		else if(varAccessModifier == "protected")
 			return "#";
-		else if(varScope == "public")
+		else if(varAccessModifier == "public")
 			return "+";
 		else
 			return "+";
 		
 	}
-	public String parser(CompilationUnit compUnit){
+	
+	public String parser(ArrayList<CompilationUnit> compUnits){
+		
+		String resultantIntermediateString = "";
+		for(CompilationUnit compUnit : compUnits)
+		{
 		List<TypeDeclaration> c1 = compUnit.getTypes();
 		Node node = c1.get(0);
-		className = getClassName(compUnit);
-		variables = getVariableCompartment(node);
-		methods = getMethodCompartment(node);
-		result = getResultString(className,variables,methods);
-		return result;
+		String classNameString = getClassName(compUnit);
+		String variablesString = getVariableCompartment(node);
+		String methodsString = getMethodCompartment(node);
+		resultantIntermediateString += getResultString(classNameString,variablesString,methodsString);
+		}
+		return resultantIntermediateString;
 	}
 	
     public String getResultString(String classNames, String variablesString, String methodsString)
@@ -110,9 +136,9 @@ public class JavaCodeParser {
             	//System.out.println("bd:"+bd);
                 FieldDeclaration fd = ((FieldDeclaration) bd);
                 //System.out.println(bd.toString());
-                String variableScope = bd.toStringWithoutComments().substring(0,
+                String variableAccessModifier = bd.toStringWithoutComments().substring(0,
                                 bd.toStringWithoutComments().indexOf(" "));
-                variableScope = convertScopeToSymbol(variableScope);
+                variableAccessModifier = convertAccessModifiedToSymbol(variableAccessModifier);
                 String variableType = fd.getType().toString();
                 // getChildrenNodes returns [String, yUMLWebLink]
                 System.out.println(variableType);
