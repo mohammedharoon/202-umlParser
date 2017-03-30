@@ -29,10 +29,8 @@ public class JavaCodeParser {
         javaCodeParser.parser(compilationUnit);
         
         //List<TypeDeclaration<?>> c1 = compilationUnit.getTypes();
-        List<TypeDeclaration> c1 = compilationUnit.getTypes();
+        //List<TypeDeclaration> c1 = compilationUnit.getTypes();
         //System.out.println(c1.size());
-        
-
         /*
         for(Node n: c1)
         {		ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration)n;
@@ -45,34 +43,44 @@ public class JavaCodeParser {
         }
         */
         //TypeDeclaration<?> node = c1.get(0);
-        Node node = c1.get(0);
-        //BodyDeclaration bd = ((TypeDeclaration) node).getMembers();
         
-        for (BodyDeclaration bd : ((TypeDeclaration)node).getMembers()) {
-        	
-            if (bd instanceof FieldDeclaration) {
-            	//System.out.println("bd:"+bd);
-                FieldDeclaration fd = ((FieldDeclaration) bd);
-                //System.out.println(bd.toString());
-                String variableScope = bd.toStringWithoutComments().substring(0,
-                                bd.toStringWithoutComments().indexOf(" "));
-                String variableType = fd.getType().toString();
-                // getChildrenNodes returns [String, yUMLWebLink]
-                String variableName = fd.getChildrenNodes().get(1).toString();
-            }   
-	    }
+        
+        //BodyDeclaration bd = ((TypeDeclaration) node).getMembers();
+
+        
+
     }
 	
 
-	
+	public String convertScopeToSymbol(String varScope)
+	{
+		if(varScope == "private")
+			return "-";
+		else if(varScope == "protected")
+			return "#";
+		else if(varScope == "public")
+			return "+";
+		else
+			return "+";
+		
+	}
 	public String parser(CompilationUnit compUnit){
+		List<TypeDeclaration> c1 = compUnit.getTypes();
+		Node node = c1.get(0);
 		className = getClassName(compUnit);
-		variables = getVariableCompartment(compUnit);
-		methods = getMethodCompartment(compUnit);
-		result = "["+ className + "|" + variables + "|" + methods + "]";
+		variables = getVariableCompartment(node);
+		methods = getMethodCompartment(node);
+		result = getResultString(className,variables,methods);
 		return result;
 	}
-
+	
+    public String getResultString(String classNames, String variablesString, String methodsString)
+    {
+    	String result;
+    	result = "["+ classNames + "|" + variablesString + "|" + methodsString + "]";
+    	return result;
+    }
+    
 	public String getClassName(CompilationUnit cu){
 		List<TypeDeclaration> c1 = cu.getTypes();
 		for(Node codeBlock : c1)
@@ -87,13 +95,31 @@ public class JavaCodeParser {
 		return "";
 	}
 	
-	public String getMethodCompartment(CompilationUnit cu) {
+	public String getMethodCompartment(Node node) {
 		// TODO Auto-generated method stub
+
 		return null;
 	}
 
-	public String getVariableCompartment(CompilationUnit cu) {
+	public String getVariableCompartment(Node node) {
 		// TODO Auto-generated method stub
+		
+        for (BodyDeclaration bd : ((TypeDeclaration)node).getMembers()) {
+        	
+            if (bd instanceof FieldDeclaration) {
+            	//System.out.println("bd:"+bd);
+                FieldDeclaration fd = ((FieldDeclaration) bd);
+                //System.out.println(bd.toString());
+                String variableScope = bd.toStringWithoutComments().substring(0,
+                                bd.toStringWithoutComments().indexOf(" "));
+                variableScope = convertScopeToSymbol(variableScope);
+                String variableType = fd.getType().toString();
+                // getChildrenNodes returns [String, yUMLWebLink]
+                System.out.println(variableType);
+                String variableName = fd.getChildrenNodes().get(1).toString();
+                System.out.println(variableName);
+            }   
+	    }
 		return null;
 	}
 }

@@ -12,7 +12,6 @@ public class GenerateClassDiagram {
 private String yUMLWebLink; //hello
 private String intermediateGrammar;
 private String fullWebURL;
-private int he;
 
 public GenerateClassDiagram(String intGrammar,String outputFile)
 {
