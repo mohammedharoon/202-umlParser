@@ -9,9 +9,10 @@ import java.net.URL;
 import com.sun.org.apache.xerces.internal.util.URI.MalformedURIException;
 
 public class GenerateClassDiagram {
-private String yUMLWebLink;
+private String yUMLWebLink; //hello
 private String intermediateGrammar;
 private String fullWebURL;
+private int he;
 
 public GenerateClassDiagram(String intGrammar,String outputFile)
 {
@@ -54,3 +55,4 @@ public static void main(String args[])
     gen.generateDiagram();
 }
 }
+
