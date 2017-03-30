@@ -2,6 +2,7 @@ package generatorClasses;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,17 +27,7 @@ public class MyJavaCodeParser {
 		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
 		FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");
 		ArrayList<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
-		File testFolder = new File(basePath);
-		for(File file : testFolder.listFiles())
-		{
-			if(file.getName().endsWith(".java") && file.isFile())
-			{
-			    FileInputStream inpFile = new FileInputStream(file);
-			    CompilationUnit compilationUnit = JavaParser.parse(inpFile);
-			    compilationUnits.add(compilationUnit);
-			    in.close();
-			}
-		}
+
         // parse the file
 
         MyJavaCodeParser javaCodeParser = new MyJavaCodeParser();
@@ -62,10 +53,36 @@ public class MyJavaCodeParser {
         //BodyDeclaration bd = ((TypeDeclaration) node).getMembers();
     }
 	
-	public String CompileTestFolder(String testFolderPath)
+	/** This method reads the files in the test folder for creating UML diagram.
+	 * If the file is a java file then it creates a compilationUnit for it. 
+	 * @param testFolderPath
+	 * @return compilationUnits
+	 */
+	public ArrayList<CompilationUnit> CompileTestFolder(String testFolderPath) 
 	{
-		
-		return null;
+		ArrayList<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
+		File testFolder = new File(testFolderPath);
+		for(File file : testFolder.listFiles())
+		{
+			if(file.getName().endsWith(".java") && file.isFile())
+			{
+				try
+				{
+					FileInputStream  inpFile = new FileInputStream(file);
+			        CompilationUnit compilationUnit = JavaParser.parse(inpFile);
+			        compilationUnits.add(compilationUnit);
+			        inpFile.close();
+				}
+				catch(FileNotFoundException e)
+				{
+					e.printStackTrace();
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+		return compilationUnits;
 	}
     /** This method converts the access modifier of a variable
      *  into equivalent UML symbol
