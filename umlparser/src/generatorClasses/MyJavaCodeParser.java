@@ -22,17 +22,20 @@ public class MyJavaCodeParser {
     
 	public static void main(String args[]) throws Exception
 	{
-		//String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\umlparser\\src\\generatorClasses";
-		//FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");
+
 		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
-		FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");
-		ArrayList<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
-
-        // parse the file
-
-        MyJavaCodeParser javaCodeParser = new MyJavaCodeParser();
-        javaCodeParser.parser(compilationUnits);
+		ArrayList<CompilationUnit> compilationUnits;
+        MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
         
+        //Read the folder and create compilationUnits for the java files
+        compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
+        
+        //Parse the compilationUnits
+        String result = myJavaCodeParser.parser(compilationUnits);
+        System.out.println(result);
+        
+		//String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\umlparser\\src\\generatorClasses";
+		//FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");        
         //List<TypeDeclaration<?>> c1 = compilationUnit.getTypes();
         //List<TypeDeclaration> c1 = compilationUnit.getTypes();
         //System.out.println(c1.size());
@@ -58,7 +61,7 @@ public class MyJavaCodeParser {
 	 * @param testFolderPath
 	 * @return compilationUnits
 	 */
-	public ArrayList<CompilationUnit> CompileTestFolder(String testFolderPath) 
+	public ArrayList<CompilationUnit> compileTestFolder(String testFolderPath) 
 	{
 		ArrayList<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
 		File testFolder = new File(testFolderPath);
@@ -84,6 +87,7 @@ public class MyJavaCodeParser {
 		}
 		return compilationUnits;
 	}
+	
     /** This method converts the access modifier of a variable
      *  into equivalent UML symbol
      * @param varAccessModifier
@@ -104,7 +108,7 @@ public class MyJavaCodeParser {
 	
 	public String parser(ArrayList<CompilationUnit> compUnits){
 		
-		String resultantIntermediateString = "";
+
 		for(CompilationUnit compUnit : compUnits)
 		{
 		List<TypeDeclaration> c1 = compUnit.getTypes();
@@ -156,11 +160,19 @@ public class MyJavaCodeParser {
                 String variableAccessModifier = bd.toStringWithoutComments().substring(0,
                                 bd.toStringWithoutComments().indexOf(" "));
                 variableAccessModifier = convertAccessModifiedToSymbol(variableAccessModifier);
+                System.out.println(variableAccessModifier);
                 String variableType = fd.getType().toString();
                 // getChildrenNodes returns [String, yUMLWebLink]
                 System.out.println(variableType);
                 String variableName = fd.getChildrenNodes().get(1).toString();
                 System.out.println(variableName);
+                
+                boolean dependencyExist = false;
+                if(variableName.contains("<"))
+                {
+                	String dependency = variableName.substring(variableName.indexOf("<")+1, variableName.indexOf(""));
+                	dependencyExist = true;
+                }
             }   
 	    }
 		return null;
