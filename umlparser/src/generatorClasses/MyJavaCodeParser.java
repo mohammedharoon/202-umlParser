@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
@@ -19,17 +20,17 @@ public class MyJavaCodeParser {
 	private String methods;
 	private String className;
     private String resultantIntermediateString;
-    
+    private HashMap<String,String> classInterfaceMap;
 	public static void main(String args[]) throws Exception
 	{
-
+      
 		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
-        
+
         //Read the folder and create compilationUnits for the java files
         compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
-        
+        myJavaCodeParser.createClassInterfaceMap(compilationUnits);
         //Parse the compilationUnits
         String result = myJavaCodeParser.parser(compilationUnits);
         System.out.println(result);
@@ -55,6 +56,25 @@ public class MyJavaCodeParser {
         
         //BodyDeclaration bd = ((TypeDeclaration) node).getMembers();
     }
+	
+	public void createClassInterfaceMap(ArrayList<CompilationUnit> compilationUnits)
+	{
+		classInterfaceMap = new HashMap<String,String>();
+		for(CompilationUnit compilationUnit : compilationUnits)
+		{
+			List<TypeDeclaration> typeDec = compilationUnit.getTypes();
+			for(Node node: typeDec)
+			{
+				ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) node;
+				if(coid.isInterface())
+				    classInterfaceMap.put(coid.getName(), "interface");
+				else
+					classInterfaceMap.put(coid.getName(), "class");
+			}
+		}
+	}
+	
+	
 	
 	/** This method reads the files in the test folder for creating UML diagram.
 	 * If the file is a java file then it creates a compilationUnit for it. 
@@ -108,7 +128,7 @@ public class MyJavaCodeParser {
 	
 	public String parser(ArrayList<CompilationUnit> compUnits){
 		
-
+        
 		for(CompilationUnit compUnit : compUnits)
 		{
 		List<TypeDeclaration> c1 = compUnit.getTypes();
