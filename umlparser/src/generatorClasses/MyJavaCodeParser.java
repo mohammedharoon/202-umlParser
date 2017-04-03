@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.*;
@@ -19,6 +20,7 @@ public class MyJavaCodeParser {
 	private static String variables;
 	private String methods;
 	private String className;
+	private String relationships;
     private String resultantIntermediateString;
     private HashMap<String,String> classInterfaceMap;
 	public static void main(String args[]) throws Exception
@@ -32,6 +34,7 @@ public class MyJavaCodeParser {
         compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
         myJavaCodeParser.createClassInterfaceMap(compilationUnits);
         //Parse the compilationUnits
+        //myJavaCodeParser.printClassInterfaceMap();
         String result = myJavaCodeParser.parser(compilationUnits);
         System.out.println(result);
         
@@ -57,6 +60,15 @@ public class MyJavaCodeParser {
         //BodyDeclaration bd = ((TypeDeclaration) node).getMembers();
     }
 	
+    private void printClassInterfaceMap() {
+        System.out.println("Map:");
+        Set<String> keys = classInterfaceMap.keySet(); // get all keys
+        for (String i : keys) {
+            System.out.println(i + "->" + classInterfaceMap.get(i));
+        }
+        System.out.println("---");
+    }
+    
 	public void createClassInterfaceMap(ArrayList<CompilationUnit> compilationUnits)
 	{
 		classInterfaceMap = new HashMap<String,String>();
@@ -141,14 +153,14 @@ public class MyJavaCodeParser {
 		return resultantIntermediateString;
 	}
 	
-    public String getResultString(String classNames, String variablesString, String methodsString)
+    private String getResultString(String classNames, String variablesString, String methodsString)
     {
     	String result;
     	result = "["+ classNames + "|" + variablesString + "|" + methodsString + "]";
     	return result;
     }
     
-	public String getClassName(CompilationUnit cu){
+	private String getClassName(CompilationUnit cu){
 		List<TypeDeclaration> c1 = cu.getTypes();
 		for(Node codeBlock : c1)
 		{
@@ -162,13 +174,53 @@ public class MyJavaCodeParser {
 		return "";
 	}
 	
-	public String getMethodCompartment(Node node) {
+	private String getMethodCompartment(Node node) {
 		// TODO Auto-generated method stub
-
-		return null;
+		boolean nextConstructor = false;
+		String methodString = "";
+		ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) node;
+        for (BodyDeclaration bd : ((TypeDeclaration) node).getMembers()) {
+            // Get Methods
+            if (bd instanceof ConstructorDeclaration) {
+                ConstructorDeclaration cd = ((ConstructorDeclaration) bd);
+                if (cd.getDeclarationAsString().startsWith("public")
+                        && !coid.isInterface()) {
+                    if (nextConstructor)
+                    	methodString += ";";
+                    methodString += "+ " + cd.getName() + "(";
+                    for (Object childNodeObj : cd.getChildrenNodes()) 
+                    {
+                    	
+                        if (childNodeObj instanceof Parameter) 
+                        {
+                            Parameter paramCast = (Parameter) childNodeObj;
+                            String paramClass = paramCast.getType().toString();
+                            System.out.println(paramClass);
+                            String paramName = paramCast.getChildrenNodes()
+                                    .get(0).toString();
+                            System.out.println(paramName);
+                            methodString += paramName + " : " + paramClass;
+                            if (classInterfaceMap.containsKey(paramClass)
+                                    && !classInterfaceMap.get(paramClass).equals("class")) 
+                            {
+                            	relationships += "[" + paramClass + "] uses -.->";
+                                if (classInterfaceMap.get(paramClass).equals("interface"))
+                                	relationships += "[<<interface>>;" + paramClass + "]";
+                                else
+                                	relationships += "[" + paramClass + "]";
+                            }
+                            relationships += ",";
+                        }
+                    }
+                    methodString += ")";
+                    nextConstructor = true;
+                }
+            }
+        }
+		return methodString;
 	}
 
-	public String getVariableCompartment(Node node) {
+	private String getVariableCompartment(Node node) {
 		// TODO Auto-generated method stub
 		
         for (BodyDeclaration bd : ((TypeDeclaration)node).getMembers()) {

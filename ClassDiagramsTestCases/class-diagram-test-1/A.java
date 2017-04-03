@@ -3,7 +3,10 @@
 import java.util.Collection;
 
 public class A {
- 
+    public A()
+	{
+		
+	}
 	private int x;
 	 
 	private int[] y;
