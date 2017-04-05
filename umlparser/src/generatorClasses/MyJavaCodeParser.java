@@ -165,6 +165,17 @@ public class MyJavaCodeParser {
 		for(Node codeBlock : c1)
 		{
 			ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) codeBlock;
+			if(coid.getExtends() != null)
+			{
+				relationships += "[" + coid.getName() +"]"+ "-^" + coid.getExtends() +",";
+			}
+			if(coid.getImplements() != null)
+			{
+				List<ClassOrInterfaceType> implementsInterfaceList = (List<ClassOrInterfaceType>) coid.getImplements();
+				for(ClassOrInterfaceType implementsInterface : implementsInterfaceList)
+					relationships += "[" + coid.getName() + "]" +"-.-^" + "[<<interface>>;" + implementsInterface + "],";
+
+			}
 			if(coid.isInterface())
 				return "<<interface>>;" + coid.getName();
 			else
@@ -253,7 +264,7 @@ public class MyJavaCodeParser {
                         methodString += ") : " + md.getType();
                         nextMethod = true;
                 }
-            }
+            }// if bd is type of method
         }// for loop of body dec
         
         //methods
