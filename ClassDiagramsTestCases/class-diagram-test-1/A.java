@@ -5,7 +5,7 @@ import java.util.Collection;
 public class A {
     public A()
 	{
-		
+	
 	}
 	private int x;
 	 
@@ -16,6 +16,6 @@ public class A {
 	private C c;
 	 
 	private Collection<D> d;
-	 
+
 }
  

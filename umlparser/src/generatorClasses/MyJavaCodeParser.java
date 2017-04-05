@@ -20,13 +20,13 @@ public class MyJavaCodeParser {
 	private static String variables;
 	private String methods;
 	private String className;
-	private String relationships;
+	private String relationships = "";
     private String resultantIntermediateString;
     private HashMap<String,String> classInterfaceMap;
 	public static void main(String args[]) throws Exception
 	{
       
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-2";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
 
@@ -129,12 +129,10 @@ public class MyJavaCodeParser {
 	{
 		if(varAccessModifier == "private")
 			return "-";
-		else if(varAccessModifier == "protected")
-			return "#";
 		else if(varAccessModifier == "public")
 			return "+";
 		else
-			return "+";
+			return "";
 		
 	}
 	
@@ -145,11 +143,13 @@ public class MyJavaCodeParser {
 		{
 		List<TypeDeclaration> c1 = compUnit.getTypes();
 		Node node = c1.get(0);
+		System.out.println("comp Unit ->"+compUnit);
 		String classNameString = getClassName(compUnit);
 		String variablesString = getVariableCompartment(node);
 		String methodsString = getMethodCompartment(node);
 		resultantIntermediateString += getResultString(classNameString,variablesString,methodsString);
 		}
+		resultantIntermediateString += relationships;
 		return resultantIntermediateString;
 	}
 	
@@ -166,7 +166,7 @@ public class MyJavaCodeParser {
 		{
 			ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) codeBlock;
 			if(coid.isInterface())
-				return "<<interface>>";
+				return "<<interface>>;" + coid.getName();
 			else
 				return coid.getName();
 		}
@@ -176,47 +176,91 @@ public class MyJavaCodeParser {
 	
 	private String getMethodCompartment(Node node) {
 		// TODO Auto-generated method stub
-		boolean nextConstructor = false;
+		boolean nextMethod = false;
 		String methodString = "";
 		ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) node;
+		String className = coid.getName();
         for (BodyDeclaration bd : ((TypeDeclaration) node).getMembers()) {
-            // Get Methods
+            // Get public constructors
+        	System.out.println("bd ->" + bd);
             if (bd instanceof ConstructorDeclaration) {
                 ConstructorDeclaration cd = ((ConstructorDeclaration) bd);
-                if (cd.getDeclarationAsString().startsWith("public")
-                        && !coid.isInterface()) {
-                    if (nextConstructor)
+                if (cd.getDeclarationAsString().startsWith("public")) {
+                    if (nextMethod)
                     	methodString += ";";
                     methodString += "+ " + cd.getName() + "(";
+                    System.out.println("getChildrenNodes ->"+cd.getChildrenNodes());
                     for (Object childNodeObj : cd.getChildrenNodes()) 
                     {
                     	
                         if (childNodeObj instanceof Parameter) 
                         {
-                            Parameter paramCast = (Parameter) childNodeObj;
-                            String paramClass = paramCast.getType().toString();
-                            System.out.println(paramClass);
-                            String paramName = paramCast.getChildrenNodes()
+                            Parameter parameter = (Parameter) childNodeObj;
+                            String parameterType = parameter.getType().toString();
+                            System.out.println("par type: " + parameterType);
+                            String parameterName = parameter.getChildrenNodes()
                                     .get(0).toString();
-                            System.out.println(paramName);
-                            methodString += paramName + " : " + paramClass;
-                            if (classInterfaceMap.containsKey(paramClass)
-                                    && !classInterfaceMap.get(paramClass).equals("class")) 
+                            System.out.println(parameterName);
+                            methodString += parameterName + " : " + parameterType;
+                            if (classInterfaceMap.containsKey(parameterType)) 
                             {
-                            	relationships += "[" + paramClass + "] uses -.->";
-                                if (classInterfaceMap.get(paramClass).equals("interface"))
-                                	relationships += "[<<interface>>;" + paramClass + "]";
+                            	relationships += "[" + className + "] uses -.->";
+                                if (classInterfaceMap.get(parameterType).equals("interface"))
+                                	relationships += "[<<interface>>;" + parameterType + "]";
                                 else
-                                	relationships += "[" + paramClass + "]";
+                                	relationships += "[" + parameterType + "]";
+                                relationships += ",";
                             }
-                            relationships += ",";
+                            //relationships += ",";
                         }
                     }
                     methodString += ")";
-                    nextConstructor = true;
+                    nextMethod = true;
+                }//if const is public
+            }//if bd is of type constructor
+            
+            //get public methods
+            if (bd instanceof MethodDeclaration) {
+                MethodDeclaration md = ((MethodDeclaration) bd);
+                // Get only public methods
+                if (md.getDeclarationAsString().startsWith("public")
+                        && !coid.isInterface()) {
+
+                        if (nextMethod)
+                        	methodString += ";";
+                        methodString += "+ " + md.getName() + "(";
+                        for (Object childNodeObj : md.getChildrenNodes()) {
+                            if (childNodeObj instanceof Parameter) {
+                                Parameter parameter = (Parameter) childNodeObj;
+                                String parameterType = parameter.getType()
+                                        .toString();
+                                String parameterName = parameter.getChildrenNodes()
+                                        .get(0).toString();
+                                methodString += parameterName + " : " + parameterType;
+                                if (classInterfaceMap.containsKey(parameterType)) {
+                                	relationships += "[" + className
+                                            + "]uses -.->";
+                                    if (classInterfaceMap.get(parameterType).equals("interface"))
+                                    	relationships += "[<<interface>>;"
+                                                + parameterType + "]";
+                                    else
+                                    	relationships += "[" + parameterType + "]";
+                                }
+                                relationships += ",";
+                            }
+
+                        }
+                        methodString += ") : " + md.getType();
+                        nextMethod = true;
                 }
             }
-        }
+        }// for loop of body dec
+        
+        //methods
+
+
+
+        
 		return methodString;
 	}
 
@@ -232,12 +276,12 @@ public class MyJavaCodeParser {
                 String variableAccessModifier = bd.toStringWithoutComments().substring(0,
                                 bd.toStringWithoutComments().indexOf(" "));
                 variableAccessModifier = convertAccessModifiedToSymbol(variableAccessModifier);
-                System.out.println(variableAccessModifier);
+                //System.out.println(variableAccessModifier);
                 String variableType = fd.getType().toString();
                 // getChildrenNodes returns [String, yUMLWebLink]
-                System.out.println(variableType);
+                //System.out.println(variableType);
                 String variableName = fd.getChildrenNodes().get(1).toString();
-                System.out.println(variableName);
+                //System.out.println(variableName);
                 
                 boolean dependencyExist = false;
                 if(variableName.contains("<"))
