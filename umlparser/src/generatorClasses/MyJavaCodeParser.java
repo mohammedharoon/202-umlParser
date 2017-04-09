@@ -277,7 +277,8 @@ public class MyJavaCodeParser {
 
 	private String getVariableCompartment(Node node) {
 		// TODO Auto-generated method stub
-		
+		boolean nextVariable = false;
+		String variableString = "";
         for (BodyDeclaration bd : ((TypeDeclaration)node).getMembers()) {
         	
             if (bd instanceof FieldDeclaration) {
