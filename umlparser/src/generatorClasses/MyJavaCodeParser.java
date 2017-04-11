@@ -195,7 +195,14 @@ public class MyJavaCodeParser {
     private String getResultString(String classNames, String variablesString, String methodsString)
     {
     	String result;
-    	result = "["+ classNames + "|" + variablesString + "|" + methodsString + "],";
+    	if(variablesString.length() == 0 && methodsString.length() == 0)
+    	    result = "["+ classNames  + "],";
+    	else if(variablesString.length() == 0)
+    		result = "["+ classNames + "|" + methodsString + "],";
+    	else if(methodsString.length() == 0)
+    		result = "["+ classNames + "|" + variablesString + "],";
+    	else
+    		result = "["+ classNames + "|" + variablesString + "|" + methodsString + "],";
     	return result;
     }
     
@@ -333,7 +340,7 @@ public class MyJavaCodeParser {
                 //System.out.println(variableType);
                 String variableName = fd.getChildrenNodes().get(1).toString();
                 //System.out.println(variableName);
-                
+                variableString = variableAccessModifier + variableName +":"+variableType;
                 boolean dependencyExist = false;
                 if(variableName.contains("<"))
                 {
@@ -342,7 +349,7 @@ public class MyJavaCodeParser {
                 }
             }   
 	    }
-		return null;
+		return variableString;
 	}
 }
 
