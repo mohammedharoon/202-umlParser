@@ -52,7 +52,6 @@ public class MyJavaCodeParser {
     		while((i = hcon.getInputStream().read())!=-1)
     			fos.write(i);
     		fos.close();
-    		
     	}
     	catch(MalformedURLException e){
     		e.printStackTrace();
@@ -60,22 +59,22 @@ public class MyJavaCodeParser {
     	catch(Exception e)
     	{
     		e.printStackTrace();
-    	}
-    		
+    	}	
     }
     
+    /**
+     * 
+     * @param args
+     * @throws Exception
+     */
 	public static void main(String args[]) throws Exception
-	{
-      
+	{  
 		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
-
         //Read the folder and create compilationUnits for the java files
         compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
         myJavaCodeParser.createClassInterfaceMap(compilationUnits);
-        //Parse the compilationUnits
-        //myJavaCodeParser.printClassInterfaceMap();
         String result = myJavaCodeParser.parser(compilationUnits);
         System.out.println(result);
         myJavaCodeParser.generateDiagram("test2");
@@ -97,7 +96,6 @@ public class MyJavaCodeParser {
 			}
 		}
 	}
-	
 	
 	
 	/** This method reads the files in the test folder for creating UML diagram.
@@ -215,8 +213,6 @@ public class MyJavaCodeParser {
 		String className = coid.getName();
 		boolean isInterface = coid.isInterface();
         for (BodyDeclaration bd : ((TypeDeclaration) node).getMembers()) {
-            // Get public constructors
-        	//System.out.println("bd ->" + bd);
             if (bd instanceof ConstructorDeclaration) {
                 ConstructorDeclaration cd = ((ConstructorDeclaration) bd);
                 if (cd.getDeclarationAsString().startsWith("public")) {
@@ -231,23 +227,17 @@ public class MyJavaCodeParser {
                         {
                             Parameter parameter = (Parameter) childNodeObj;
                             String parameterType = parameter.getType().toString();
-                            System.out.println("par type: " + parameterType);
-                            String parameterName = parameter.getChildrenNodes()
-                                    .get(0).toString();
-                            System.out.println(parameterName);
+                            String parameterName = parameter.getChildrenNodes().get(0).toString();
                             methodString += parameterName + " : " + parameterType;
                             if (classInterfaceMap.containsKey(parameterType)) 
                             {
-                            	
                                 if (classInterfaceMap.get(parameterType).equals("interface") && !isInterface)
                                 {
                                 	relationships += "[" + className + "] uses -.->";
                                 	relationships += "[<<interface>>;" + parameterType + "]";
                                 }
-
                                 relationships += ",";
                             }
-                            //relationships += ",";
                         }
                     }
                     methodString += ")";
@@ -259,11 +249,8 @@ public class MyJavaCodeParser {
             if (bd instanceof MethodDeclaration) {
                 MethodDeclaration md = ((MethodDeclaration) bd);
                 // Get only public methods
-                System.out.println("md ->"+md);
-                System.out.println("md.childnodes:->"+md.getChildrenNodes());
                 if (md.getDeclarationAsString().startsWith("public")){
                         //&& !coid.isInterface()) {
-
                         if (nextMethod)
                         	methodString += ";";
                         methodString += "+ " + md.getName() + "(";
@@ -319,7 +306,6 @@ public class MyJavaCodeParser {
                                                  }
                                               }
                                              relationships += ",";
-                            			    System.out.println(localVariable);
                             			    }
                             		}
                             	}
@@ -353,9 +339,6 @@ public class MyJavaCodeParser {
                 {
                 	variableType = variableType.replace("[", "(*");
                 	variableType = variableType.replace("]", ")");
-                	//variableType = sb.toString();
-                	
-                	//variableType = variableType. (variableType.substring(variableType.indexOf("[")+1,variableType.indexOf("]")+1), "*");
                 }
                 if(variableName.contains("="))
                 	variableName = variableName.substring(0,variableName.indexOf("="));
@@ -395,7 +378,3 @@ public class MyJavaCodeParser {
 		return variableString;
 	}
 }
-
-
-
-
