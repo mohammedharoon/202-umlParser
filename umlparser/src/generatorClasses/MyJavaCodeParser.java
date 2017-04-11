@@ -3,6 +3,10 @@ package generatorClasses;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +27,45 @@ public class MyJavaCodeParser {
 	private String relationships = "";
     private String resultantIntermediateString;
     private HashMap<String,String> classInterfaceMap;
+    private String yUMLWebLink;
+    private String fullWebURL;
+    
+    public MyJavaCodeParser()
+    {
+    	this.yUMLWebLink = "https://yuml.me/diagram/scruffy/class/";
+
+    }
+  
+    public void generateDiagram(String outputFileName)
+    {
+    	fullWebURL = yUMLWebLink + resultantIntermediateString;
+    	try{
+    		URL url = new URL(fullWebURL);
+    		HttpURLConnection hcon = (HttpURLConnection) url.openConnection();
+    		hcon.setRequestMethod("GET");
+    		String outputFilePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\outputFiles\\"+outputFileName+".png";
+    		FileOutputStream fos = new FileOutputStream(new File(outputFilePath));
+    		System.out.println(hcon.getResponseCode());
+    		int i;
+    		while((i = hcon.getInputStream().read())!=-1)
+    			fos.write(i);
+    		fos.close();
+    		
+    	}
+    	catch(MalformedURLException e){
+    		e.printStackTrace();
+    	}
+    	catch(Exception e)
+    	{
+    		e.printStackTrace();
+    	}
+    		
+    }
+    
 	public static void main(String args[]) throws Exception
 	{
       
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-2";
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-3";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
 
@@ -37,7 +76,7 @@ public class MyJavaCodeParser {
         //myJavaCodeParser.printClassInterfaceMap();
         String result = myJavaCodeParser.parser(compilationUnits);
         System.out.println(result);
-        
+        myJavaCodeParser.generateDiagram("test2");
 		//String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\umlparser\\src\\generatorClasses";
 		//FileInputStream in = new FileInputStream(basePath+"/GenerateClassDiagram.java");        
         //List<TypeDeclaration<?>> c1 = compilationUnit.getTypes();
@@ -156,7 +195,7 @@ public class MyJavaCodeParser {
     private String getResultString(String classNames, String variablesString, String methodsString)
     {
     	String result;
-    	result = "["+ classNames + "|" + variablesString + "|" + methodsString + "]";
+    	result = "["+ classNames + "|" + variablesString + "|" + methodsString + "],";
     	return result;
     }
     
