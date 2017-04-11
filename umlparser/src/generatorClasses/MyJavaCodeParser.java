@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.ParameterMetaData;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,16 +21,11 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 
 public class MyJavaCodeParser {
 	
-	private static String variables;
-	private String methods;
-	private String className;
 	private String relationships = "";
     private String resultantIntermediateString;
     private HashMap<String,String> classInterfaceMap;
@@ -73,7 +67,7 @@ public class MyJavaCodeParser {
 	public static void main(String args[]) throws Exception
 	{
       
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-5";
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
 
@@ -85,15 +79,6 @@ public class MyJavaCodeParser {
         String result = myJavaCodeParser.parser(compilationUnits);
         System.out.println(result);
         myJavaCodeParser.generateDiagram("test2");
-    }
-	
-    private void printClassInterfaceMap() {
-        System.out.println("Map:");
-        Set<String> keys = classInterfaceMap.keySet(); // get all keys
-        for (String i : keys) {
-            System.out.println(i + "->" + classInterfaceMap.get(i));
-        }
-        System.out.println("---");
     }
     
 	public void createClassInterfaceMap(ArrayList<CompilationUnit> compilationUnits)
@@ -224,7 +209,6 @@ public class MyJavaCodeParser {
 	}
 	
 	private String getMethodCompartment(Node node) {
-		// TODO Auto-generated method stub
 		boolean nextMethod = false;
 		String methodString = "";
 		ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) node;
@@ -299,11 +283,12 @@ public class MyJavaCodeParser {
                                     	relationships += "[" + className+ "]uses -.->";
                                     	relationships += "[<<interface>>;"+ parameterType + "]";	
                                         }
+                                        /*
                                         else if(classInterfaceMap.get(parameterType).equals("interface") && isInterface)
                                         {
                                     	 relationships += "[<<interface>>;" + className + "] uses -.->";
                                     	 relationships += "[<<interface>>;" + parameterType + "]";                                	
-                                        }
+                                        }*/
                                      }
                                     relationships += ",";
                                  }
@@ -323,15 +308,14 @@ public class MyJavaCodeParser {
                             			    String localVariable = var.getType().toString();
                                             if (classInterfaceMap.containsKey(localVariable) && !isInterface) 
                                             {
+                                            	relationships += "[" + className+ "]uses-.->";
                                                  if (classInterfaceMap.get(localVariable).equals("interface"))
                                                 {
-                                             	relationships += "[" + className+ "]uses -.->";
                                              	relationships += "[<<interface>>;"+ localVariable + "]";	
                                                  }
                                                  else if(classInterfaceMap.get(localVariable).equals("class"))
                                                  {
-                                             	 relationships += "[<<interface>>;" + className + "] uses -.->";
-                                             	 relationships += "[<<interface>>;" + localVariable + "]";                                	
+                                             	 relationships += "[" + localVariable + "]";                                	
                                                  }
                                               }
                                              relationships += ",";
@@ -339,16 +323,6 @@ public class MyJavaCodeParser {
                             			    }
                             		}
                             	}
-                            	/*
-                            	for(Statement s:bst.getStmts())
-                            	{ 
-                            		
-                            		String ss = s.toString();
-                            		System.out.println(ss);
-                            	}*/
-                            	//System.out.println(childNodeObj.getClass());
-
-
                             }
                         }
                         methodString += ") : " + md.getType();
@@ -360,7 +334,6 @@ public class MyJavaCodeParser {
 	}
 
 	private String getVariableCompartment(Node node) {
-		// TODO Auto-generated method stub
 		boolean nextVariable = false;
 		String variableString = "";
 		ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) node;
@@ -368,42 +341,32 @@ public class MyJavaCodeParser {
         for (BodyDeclaration bd : ((TypeDeclaration)node).getMembers()) {
         	
             if (bd instanceof FieldDeclaration) {
-
-            	//System.out.println("bd:"+bd);
                 FieldDeclaration fd = ((FieldDeclaration) bd);
-                //System.out.println("bd ->"+bd.toString());
-                //System.out.println(fd.getChildrenNodes());
                 //[String, message = "hello"]
                 String variableAccessModifier = bd.toStringWithoutComments().substring(0,
                                 bd.toStringWithoutComments().indexOf(" "));
                 variableAccessModifier = convertAccessModifiedToSymbol(variableAccessModifier);
-                //System.out.println(variableAccessModifier);
-                String variableType = fd.getType().toString();
-                // getChildrenNodes returns [String, yUMLWebLink]
-                //System.out.println(variableType);
+                String variableType =  fd.getType().toString();
+                //StringBuilder sb = new StringBuilder(variableType);
                 String variableName = fd.getChildrenNodes().get(1).toString();
                 if(variableType.contains("["))
                 {
-                	variableType = variableType.replace("[", "(");
+                	variableType = variableType.replace("[", "(*");
                 	variableType = variableType.replace("]", ")");
+                	//variableType = sb.toString();
+                	
+                	//variableType = variableType. (variableType.substring(variableType.indexOf("[")+1,variableType.indexOf("]")+1), "*");
                 }
                 if(variableName.contains("="))
                 	variableName = variableName.substring(0,variableName.indexOf("="));
-                if(variableAccessModifier.equals("-") || variableAccessModifier.equals("+"))
-                {
-                	if(nextVariable)
-                	    variableString += ";";
-                    variableString += variableAccessModifier + variableName +":"+variableType;
-                    nextVariable = true;
-                }
-                // for uses relationship
-                //for arrays
 
-                
+                // for uses relationship
                 if(classInterfaceMap.containsKey(variableType))
                 {
                 	if(classInterfaceMap.get(variableType).equals("class"))
                 	    relationships += "[" + className + "]-[" + variableType+"],";
+                	if(classInterfaceMap.get(variableType).equals("interface"))
+                	    relationships += "[" + className + "]-[<<interface>>;" + variableType+"],";
                 }
                 //for collection of class objects
                 if(variableType.contains("<"))
@@ -418,6 +381,14 @@ public class MyJavaCodeParser {
                 		else
                 		    relationships += "[" + className + "]-*[<<interface>>;" + collectionType+"],";
                 	}
+                	continue;
+                }
+                if(variableAccessModifier.equals("-") || variableAccessModifier.equals("+"))
+                {
+                	if(nextVariable)
+                	    variableString += ";";
+                    variableString += variableAccessModifier + variableName +":"+variableType;
+                    nextVariable = true;
                 }
             }   
 	    }
