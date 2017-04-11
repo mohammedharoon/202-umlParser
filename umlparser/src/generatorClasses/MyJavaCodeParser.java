@@ -65,7 +65,7 @@ public class MyJavaCodeParser {
 	public static void main(String args[]) throws Exception
 	{
       
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-3";
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
 
@@ -166,9 +166,9 @@ public class MyJavaCodeParser {
      */
 	public String convertAccessModifiedToSymbol(String varAccessModifier)
 	{
-		if(varAccessModifier == "private")
+		if(varAccessModifier.equals("private"))
 			return "-";
-		else if(varAccessModifier == "public")
+		else if(varAccessModifier.equals("public"))
 			return "+";
 		else
 			return "";
@@ -185,7 +185,8 @@ public class MyJavaCodeParser {
 		System.out.println("comp Unit ->"+compUnit);
 		String classNameString = getClassName(compUnit);
 		String variablesString = getVariableCompartment(node);
-		String methodsString = getMethodCompartment(node);
+		//String methodsString = getMethodCompartment(node);
+		String methodsString = "";
 		resultantIntermediateString += getResultString(classNameString,variablesString,methodsString);
 		}
 		resultantIntermediateString += relationships;
@@ -305,19 +306,12 @@ public class MyJavaCodeParser {
                                 }
                                 relationships += ",";
                             }
-
                         }
                         methodString += ") : " + md.getType();
                         nextMethod = true;
                 }
             }// if bd is type of method
         }// for loop of body dec
-        
-        //methods
-
-
-
-        
 		return methodString;
 	}
 
@@ -325,12 +319,17 @@ public class MyJavaCodeParser {
 		// TODO Auto-generated method stub
 		boolean nextVariable = false;
 		String variableString = "";
+		ClassOrInterfaceDeclaration coid = (ClassOrInterfaceDeclaration) node;
+		String className = coid.getName();
         for (BodyDeclaration bd : ((TypeDeclaration)node).getMembers()) {
         	
             if (bd instanceof FieldDeclaration) {
+
             	//System.out.println("bd:"+bd);
                 FieldDeclaration fd = ((FieldDeclaration) bd);
-                //System.out.println(bd.toString());
+                System.out.println("bd ->"+bd.toString());
+                System.out.println(fd.getChildrenNodes());
+                //[String, message = "hello"]
                 String variableAccessModifier = bd.toStringWithoutComments().substring(0,
                                 bd.toStringWithoutComments().indexOf(" "));
                 variableAccessModifier = convertAccessModifiedToSymbol(variableAccessModifier);
@@ -339,14 +338,32 @@ public class MyJavaCodeParser {
                 // getChildrenNodes returns [String, yUMLWebLink]
                 //System.out.println(variableType);
                 String variableName = fd.getChildrenNodes().get(1).toString();
-                //System.out.println(variableName);
-                variableString = variableAccessModifier + variableName +":"+variableType;
-                boolean dependencyExist = false;
-                if(variableName.contains("<"))
+                if(variableType.contains("["))
                 {
-                	String dependency = variableName.substring(variableName.indexOf("<")+1, variableName.indexOf(""));
-                	dependencyExist = true;
+                	variableType = variableType.replace("[", "(");
+                	variableType = variableType.replace("]", ")");
                 }
+                if(variableAccessModifier.equals("-") || variableAccessModifier.equals("+"))
+                {
+                	if(nextVariable)
+                	    variableString += ";";
+                    variableString += variableAccessModifier + variableName +":"+variableType;
+                    nextVariable = true;
+                }
+                // for uses relationship
+                if(classInterfaceMap.containsKey(variableType))
+                {
+                	if(classInterfaceMap.get(variableType).equals("class"))
+                	    relationships += "[" + className + "]-" + variableType;
+                }
+                if(variableType.contains("<"))
+                {
+                	String collectionType = variableType.substring(variableType.indexOf("<")+1, variableType.indexOf(">"));
+                	if(classInterfaceMap.containsKey(collectionType))
+                		System.out.println(classInterfaceMap.get(collectionType));
+                	System.out.println(collectionType);
+                }
+                
             }   
 	    }
 		return variableString;

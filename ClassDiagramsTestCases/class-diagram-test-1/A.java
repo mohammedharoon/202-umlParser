@@ -11,11 +11,11 @@ public class A {
 	 
 	private int[] y;
 	 
-	private Collection<B> b;
+	private Collection <B> b;
 	 
 	private C c;
 	 
-	private Collection<D> d;
+	private Collection <D> d;
 
 }
  

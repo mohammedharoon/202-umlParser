@@ -1,7 +1,7 @@
 
 class ClassA {
     
-	private String message ; // public attribute via setters and getters
+	public String message = "hello" ; // public attribute via setters and getters
     private String bark ;
     protected String foo ;
     protected String bar ;
