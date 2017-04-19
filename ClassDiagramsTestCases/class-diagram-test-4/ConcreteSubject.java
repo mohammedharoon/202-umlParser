@@ -7,11 +7,11 @@ public class ConcreteSubject implements Subject {
 	 
 	private Collection<Observer> observers = new ArrayList<Observer>() ;
 	 
-	public String getState() {
+	public String getSubjectState() {
 		return subjectState ;
 	}
 	 
-	public void setState(String status) {
+	public void setSubjectState(String status) {
 	    subjectState = status ;
         notifyObservers();
 	}

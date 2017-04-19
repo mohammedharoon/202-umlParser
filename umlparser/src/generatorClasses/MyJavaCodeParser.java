@@ -27,7 +27,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 public class MyJavaCodeParser {
 	
 	private String relationships = "";
-    private String resultantIntermediateString;
+    private String resultantIntermediateString = "";
     private HashMap<String,String> classInterfaceMap;
     private String yUMLWebLink;
     private String fullWebURL;
@@ -69,15 +69,15 @@ public class MyJavaCodeParser {
      */
 	public static void main(String args[]) throws Exception
 	{  
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-5";
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-4";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
-        //Read the folder and create compilationUnits for the java files
         compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
         myJavaCodeParser.createClassInterfaceMap(compilationUnits);
         String result = myJavaCodeParser.parser(compilationUnits);
-        myJavaCodeParser.changeAttributeAccessModifierToPublic(result);
         System.out.println(result);
+        String modifiedResult = myJavaCodeParser.changeAttributesAccessModifierToPublic(result);
+        System.out.println(modifiedResult);
         myJavaCodeParser.generateDiagram("test2");
     }
     
@@ -147,16 +147,20 @@ public class MyJavaCodeParser {
 		
 	}
 	
-	private void changeAttributeAccessModifierToPublic(String intermediateGrammer)
+	private String changeAttributesAccessModifierToPublic(String intermediateGrammer)
 	{
+		StringBuilder sb = new StringBuilder(intermediateGrammer);
      for(String varName : getterSetterVariables)
      {
-    	 int indexOfVariable = resultantIntermediateString.indexOf(varName.toLowerCase());
-    	 System.out.println(varName+indexOfVariable);
+    	 if(intermediateGrammer.contains(varName))
+    	     {
+    		 int indexOfVariable = intermediateGrammer.indexOf(varName);
+    		 sb.setCharAt(indexOfVariable-1, '+');
+    		 System.out.println(varName+indexOfVariable);
+    		 System.out.println(sb);
+    	     }
      }
-//    	StringBuilder sb = new StringBuilder(resultantIntermediateString);
-//                      	int indexOfVariable = resultantIntermediateString.indexOf(variableName.toLowerCase());
-//                    	sb.replace(indexOfVariable,indexOfVariable+1,"+");
+     return sb.toString();
 	}
 	
 	public String parser(ArrayList<CompilationUnit> compUnits){
@@ -266,8 +270,11 @@ public class MyJavaCodeParser {
                         	methodString += ";";
                         if(md.getName().startsWith("set") || md.getName().startsWith("get"))
                         {
-                        	String variableName = md.getName().substring(3).toLowerCase();
-                        	getterSetterVariables.add(variableName);
+                        	String variableName = md.getName().substring(3);
+                        	StringBuilder sb = new StringBuilder(variableName);
+                        	sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
+                        	String modifiedVariableName = sb.toString();
+                        	getterSetterVariables.add(modifiedVariableName);
                         	continue;
                         }
                         methodString += "+ " + md.getName() + "(";
