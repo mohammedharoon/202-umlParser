@@ -147,6 +147,11 @@ public class MyJavaCodeParser {
 		
 	}
 	
+	/** This method changes the access modifiers from private to public
+	 *  of those attributes that have setter and getter methods
+	 * @param intermediateGrammer
+	 * @return intermediateGrammer
+	 */
 	private String changeAttributesAccessModifierToPublic(String intermediateGrammer)
 	{
 		StringBuilder sb = new StringBuilder(intermediateGrammer);
@@ -155,9 +160,8 @@ public class MyJavaCodeParser {
     	 if(intermediateGrammer.contains(varName))
     	     {
     		 int indexOfVariable = intermediateGrammer.indexOf(varName);
-    		 sb.setCharAt(indexOfVariable-1, '+');
-    		 System.out.println(varName+indexOfVariable);
-    		 System.out.println(sb);
+    		 if(sb.charAt(indexOfVariable-1) == '-')
+    		     sb.setCharAt(indexOfVariable-1, '+');
     	     }
      }
      return sb.toString();
@@ -183,6 +187,14 @@ public class MyJavaCodeParser {
 		return resultantIntermediateString;
 	}
 	
+	/**
+	 * This method generates the intermediate grammar by combining
+	 * the className, variablesString and methodsString
+	 * @param classNames
+	 * @param variablesString
+	 * @param methodsString
+	 * @return
+	 */
     private String getResultString(String classNames, String variablesString, String methodsString)
     {
     	String result;
@@ -197,6 +209,11 @@ public class MyJavaCodeParser {
     	return result;
     }
     
+    /**
+     * This method gets the class name from the compilation unit
+     * @param cu
+     * @return
+     */
 	private String getClassName(CompilationUnit cu){
 		List<TypeDeclaration> c1 = cu.getTypes();
 		for(Node codeBlock : c1)
@@ -222,6 +239,11 @@ public class MyJavaCodeParser {
 		return "";
 	}
 	
+	/**
+	 * This method returns the Method Compartment of a class/interface
+	 * @param node
+	 * @return
+	 */
 	private String getMethodCompartment(Node node) {
 		boolean nextMethod = false;
 		String methodString = "";
@@ -342,6 +364,11 @@ public class MyJavaCodeParser {
 		return methodString;
 	}
 
+	/**
+	 * This method return the variable compartment of the class
+	 * @param node
+	 * @return
+	 */
 	private String getVariableCompartment(Node node) {
 		boolean nextVariable = false;
 		String variableString = "";

@@ -3,7 +3,7 @@ import java.util.*;
 
 public class ConcreteSubject implements Subject {
  
-	private String subjectState;
+	public String subjectState;
 	 
 	private Collection<Observer> observers = new ArrayList<Observer>() ;
 	 
