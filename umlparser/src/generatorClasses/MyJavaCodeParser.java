@@ -31,11 +31,11 @@ public class MyJavaCodeParser {
     private HashMap<String,String> classInterfaceMap;
     private String yUMLWebLink;
     private String fullWebURL;
-    
+    private Set<String> getterSetterVariables;
     public MyJavaCodeParser()
     {
     	this.yUMLWebLink = "https://yuml.me/diagram/scruffy/class/";
-
+        this.getterSetterVariables = new  HashSet<String>();
     }
   
     public void generateDiagram(String outputFileName)
@@ -69,13 +69,14 @@ public class MyJavaCodeParser {
      */
 	public static void main(String args[]) throws Exception
 	{  
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-1";
+		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-5";
 		ArrayList<CompilationUnit> compilationUnits;
         MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
         //Read the folder and create compilationUnits for the java files
         compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
         myJavaCodeParser.createClassInterfaceMap(compilationUnits);
         String result = myJavaCodeParser.parser(compilationUnits);
+        myJavaCodeParser.changeAttributeAccessModifierToPublic(result);
         System.out.println(result);
         myJavaCodeParser.generateDiagram("test2");
     }
@@ -146,6 +147,18 @@ public class MyJavaCodeParser {
 		
 	}
 	
+	private void changeAttributeAccessModifierToPublic(String intermediateGrammer)
+	{
+     for(String varName : getterSetterVariables)
+     {
+    	 int indexOfVariable = resultantIntermediateString.indexOf(varName.toLowerCase());
+    	 System.out.println(varName+indexOfVariable);
+     }
+//    	StringBuilder sb = new StringBuilder(resultantIntermediateString);
+//                      	int indexOfVariable = resultantIntermediateString.indexOf(variableName.toLowerCase());
+//                    	sb.replace(indexOfVariable,indexOfVariable+1,"+");
+	}
+	
 	public String parser(ArrayList<CompilationUnit> compUnits){
 		
         
@@ -168,7 +181,6 @@ public class MyJavaCodeParser {
 	
     private String getResultString(String classNames, String variablesString, String methodsString)
     {
-    	System.out.println(variablesString.length() + " "+ methodsString.length());
     	String result;
     	if(variablesString.length() == 0 && methodsString.length() == 0)
     	    result = "["+ classNames  + "],";
@@ -219,7 +231,6 @@ public class MyJavaCodeParser {
                     if (nextMethod)
                     	methodString += ";";
                     methodString += "+ " + cd.getName() + "(";
-                    //System.out.println("getChildrenNodes ->"+cd.getChildrenNodes());
                     for (Object childNodeObj : cd.getChildrenNodes()) 
                     {
                     	
@@ -253,11 +264,16 @@ public class MyJavaCodeParser {
                         //&& !coid.isInterface()) {
                         if (nextMethod)
                         	methodString += ";";
+                        if(md.getName().startsWith("set") || md.getName().startsWith("get"))
+                        {
+                        	String variableName = md.getName().substring(3).toLowerCase();
+                        	getterSetterVariables.add(variableName);
+                        	continue;
+                        }
                         methodString += "+ " + md.getName() + "(";
                         for (Object childNodeObj : md.getChildrenNodes()) {
                             if (childNodeObj instanceof Parameter) 
                                 {
-                            	System.out.println(childNodeObj + "->"+childNodeObj.getClass());
                                  Parameter parameter = (Parameter) childNodeObj;
                                  String parameterType = parameter.getType().toString();
                                  String parameterName = parameter.getChildrenNodes().get(0).toString();
@@ -333,7 +349,6 @@ public class MyJavaCodeParser {
                                 bd.toStringWithoutComments().indexOf(" "));
                 variableAccessModifier = convertAccessModifiedToSymbol(variableAccessModifier);
                 String variableType =  fd.getType().toString();
-                //StringBuilder sb = new StringBuilder(variableType);
                 String variableName = fd.getChildrenNodes().get(1).toString();
                 if(variableType.contains("["))
                 {
@@ -355,7 +370,6 @@ public class MyJavaCodeParser {
                 if(variableType.contains("<"))
                 {//private Collection<Observer> observers
                 	//use association
-                	//for parameters use uses relationship and only for interfaces
                 	String collectionType = variableType.substring(variableType.indexOf("<")+1, variableType.indexOf(">"));
                 	if(classInterfaceMap.containsKey(collectionType))
                 	{
