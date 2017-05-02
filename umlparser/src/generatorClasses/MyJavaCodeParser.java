@@ -26,12 +26,13 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 public class MyJavaCodeParser {
 	
+    private String yUMLWebLink;
+    private String fullWebURL;
 	private String relationships = "";
     private String resultantIntermediateString = "";
     private HashMap<String,String> classInterfaceMap;
-    private String yUMLWebLink;
-    private String fullWebURL;
     private Set<String> getterSetterVariables;
+    
     public MyJavaCodeParser()
     {
     	this.yUMLWebLink = "https://yuml.me/diagram/scruffy/class/";
@@ -63,22 +64,29 @@ public class MyJavaCodeParser {
     }
     
     /**
-     * 
+     * This is the main method
      * @param args
      * @throws Exception
      */
-	public static void main(String args[]) throws Exception
+	public static void main(String[] args) throws Exception
 	{  
-		String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-4";
-		ArrayList<CompilationUnit> compilationUnits;
-        MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
-        compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
-        myJavaCodeParser.createClassInterfaceMap(compilationUnits);
-        String result = myJavaCodeParser.parser(compilationUnits);
-        System.out.println(result);
-        String modifiedResult = myJavaCodeParser.changeAttributesAccessModifierToPublic(result);
-        System.out.println(modifiedResult);
-        myJavaCodeParser.generateDiagram("test2");
+		try{
+			//String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-4";
+			String basePath = args[0];
+			String outputFileName = args[1];
+			ArrayList<CompilationUnit> compilationUnits;
+	        MyJavaCodeParser myJavaCodeParser = new MyJavaCodeParser();
+	        compilationUnits = myJavaCodeParser.compileTestFolder(basePath);
+	        myJavaCodeParser.createClassInterfaceMap(compilationUnits);
+	        String result = myJavaCodeParser.parser(compilationUnits);
+	        String modifiedResult = myJavaCodeParser.changeAttributesAccessModifierToPublic(result);
+	        System.out.println(modifiedResult);
+	        myJavaCodeParser.generateDiagram(outputFileName); 
+		}catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("One or more parameters missing");
+			System.out.println("Please enter parameters as <SourceFolder> <OutputFileName>");
+		}
+       
     }
     
 	public void createClassInterfaceMap(ArrayList<CompilationUnit> compilationUnits)
@@ -169,16 +177,14 @@ public class MyJavaCodeParser {
 	
 	public String parser(ArrayList<CompilationUnit> compUnits){
 		
-        
 		for(CompilationUnit compUnit : compUnits)
 		{
 		List<TypeDeclaration> c1 = compUnit.getTypes();
 		Node node = c1.get(0);
-		System.out.println("comp Unit ->"+compUnit);
+		//System.out.println("comp Unit ->"+compUnit);
 		String classNameString = getClassName(compUnit);
 		String variablesString = getVariableCompartment(node);
 		String methodsString = getMethodCompartment(node);
-		//String methodsString = "";
 		resultantIntermediateString += getResultString(classNameString,variablesString,methodsString);
 		}
 		Set<String> hashSet = new HashSet<String>(Arrays.asList(relationships.split(",")));
