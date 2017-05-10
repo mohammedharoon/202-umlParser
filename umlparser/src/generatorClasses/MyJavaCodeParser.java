@@ -39,20 +39,21 @@ public class MyJavaCodeParser {
         this.getterSetterVariables = new  HashSet<String>();
     }
   
-    public void generateDiagram(String outputFileName)
+    public void generateDiagram(String outputFolder, String outputFileName)
     {
     	fullWebURL = yUMLWebLink + resultantIntermediateString;
     	try{
     		URL url = new URL(fullWebURL);
     		HttpURLConnection hcon = (HttpURLConnection) url.openConnection();
     		hcon.setRequestMethod("GET");
-    		String outputFilePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\outputFiles\\"+outputFileName+".png";
+    		String outputFilePath = outputFolder+"/"+outputFileName+".png";
     		FileOutputStream fos = new FileOutputStream(new File(outputFilePath));
-    		System.out.println(hcon.getResponseCode());
+    		//System.out.println(hcon.getResponseCode());
     		int i;
     		while((i = hcon.getInputStream().read())!=-1)
     			fos.write(i);
     		fos.close();
+    		System.out.println("Class diagram generated at : "+outputFilePath);
     	}
     	catch(MalformedURLException e){
     		e.printStackTrace();
@@ -71,7 +72,7 @@ public class MyJavaCodeParser {
 	public static void main(String[] args) throws Exception
 	{  
 		try{
-			//String basePath = "C:\\Users\\Haroon\\Desktop\\202-umlParser\\ClassDiagramsTestCases\\class-diagram-test-4";
+			//String basePath = "C:/Users/Haroon/Desktop/202-umlParser/ClassDiagramsTestCases/class-diagram-test-4";
 			String basePath = args[0];
 			String outputFileName = args[1];
 			ArrayList<CompilationUnit> compilationUnits;
@@ -80,8 +81,9 @@ public class MyJavaCodeParser {
 	        myJavaCodeParser.createClassInterfaceMap(compilationUnits);
 	        String result = myJavaCodeParser.parser(compilationUnits);
 	        String modifiedResult = myJavaCodeParser.changeAttributesAccessModifierToPublic(result);
-	        System.out.println(modifiedResult);
-	        myJavaCodeParser.generateDiagram(outputFileName); 
+	        //System.out.println(modifiedResult);
+	        myJavaCodeParser.generateDiagram(args[0],outputFileName); 
+	        
 		}catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("One or more parameters missing");
 			System.out.println("Please enter parameters as <SourceFolder> <OutputFileName>");
@@ -292,7 +294,7 @@ public class MyJavaCodeParser {
             if (bd instanceof MethodDeclaration) {
                 MethodDeclaration md = ((MethodDeclaration) bd);
                 // Get only public methods
-                if (md.getDeclarationAsString().startsWith("public")){
+                if (md.getDeclarationAsString().startsWith("public") && !coid.isInterface()){
                         //&& !coid.isInterface()) {
                         if (nextMethod)
                         	methodString += ";";
